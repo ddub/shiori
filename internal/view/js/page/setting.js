@@ -318,8 +318,15 @@ export default {
         },
       });
     },
+<<<<<<< HEAD
   },
   mounted() {
     this.loadAccounts();
   },
 };
+=======
+    mounted() {
+        this.loadAccounts();
+    }
+}
+>>>>>>> a23b58e (feat: add envelope for GET /api/accounts response)
