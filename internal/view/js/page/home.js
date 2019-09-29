@@ -790,6 +790,7 @@ export default {
           this.dialog.visible = false;
           this.dialogTags.visible = true;
         },
+<<<<<<< HEAD
         escPressed: () => {
           this.dialog.visible = false;
           this.dialogTags.visible = true;
@@ -848,10 +849,81 @@ export default {
               this.getErrorMessage(err).then((msg) => {
                 this.showErrorDialog(msg);
               });
+=======
+        showDialogRenameTag(tag) {
+            this.showDialog({
+                title: "Rename Tag",
+                content: `Change the name for tag "#${tag.name}"`,
+                fields: [{
+                    name: "newName",
+                    label: "New tag name",
+                    value: tag.name,
+                }],
+                mainText: "OK",
+                secondText: "Cancel",
+                secondClick: () => {
+                    this.dialog.visible = false;
+                    this.dialogTags.visible = true;
+                },
+                escPressed: () => {
+                    this.dialog.visible = false;
+                    this.dialogTags.visible = true;
+                },
+                mainClick: (data) => {
+                    // Save the old query
+                    var rxSpace = /\s+/g,
+                        oldTagQuery = rxSpace.test(tag.name) ? `"#${tag.name}"` : `#${tag.name}`,
+                        newTagQuery = rxSpace.test(data.newName) ? `"#${data.newName}"` : `#${data.newName}`;
+
+                    // Send data
+                    var newData = {
+                        id: tag.id,
+                        name: data.newName,
+                    };
+
+                    this.dialog.loading = true;
+                    fetch("/api/tags", {
+                        method: "PUT",
+                        body: JSON.stringify(newData),
+                        headers: { "Content-Type": "application/json" },
+                    }).then(response => {
+                        if (!response.ok) throw response;
+                        return response.json();
+                    }).then(() => {
+                        tag.name = data.newName;
+
+                        this.dialog.loading = false;
+                        this.dialog.visible = false;
+                        this.dialogTags.visible = true;
+                        this.dialogTags.editMode = false;
+                        this.tags.sort((a, b) => {
+                            var aName = a.name.toLowerCase(),
+                                bName = b.name.toLowerCase();
+
+                            if (aName < bName) return -1;
+                            else if (aName > bName) return 1;
+                            else return 0;
+                        });
+
+                        if (this.search.includes(oldTagQuery)) {
+                            this.search = this.search.replace(oldTagQuery, newTagQuery);
+                            this.loadData();
+                        }
+                    }).catch(err => {
+                        this.dialog.loading = false;
+                        this.dialogTags.visible = false;
+                        this.dialogTags.editMode = false;
+                        this.getErrorMessage(err).then(msg => {
+                            this.showErrorDialog(msg);
+                        })
+                    });
+                },
+>>>>>>> a715d52 (feat: rename PUT /api/tag to /api/tags)
             });
         },
       });
     },
+<<<<<<< HEAD
   },
   mounted() {
     // Prepare history state watcher
@@ -881,3 +953,33 @@ export default {
     this.loadData(false, true);
   },
 };
+=======
+    mounted() {
+        // Prepare history state watcher
+        var stateWatcher = (e) => {
+            var state = e.state || {},
+                activePage = state.activePage || "page-home",
+                search = state.search || "",
+                page = state.page || 1;
+
+            if (activePage !== "page-home") return;
+
+            this.page = page;
+            this.search = search;
+            this.loadData(false);
+        }
+
+        window.addEventListener('popstate', stateWatcher);
+        this.$once('hook:beforeDestroy', () => {
+            window.removeEventListener('popstate', stateWatcher);
+        })
+
+        // Set initial parameter
+        var url = new Url;
+        this.search = url.query.search || "";
+        this.page = url.query.page || 1;
+
+        this.loadData(false, true);
+    }
+}
+>>>>>>> a715d52 (feat: rename PUT /api/tag to /api/tags)
